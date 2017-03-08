@@ -34,6 +34,8 @@ class ViewController: UIViewController {
         phraseTextField.delegate = self
         latitudeTextField.delegate = self
         longitudeTextField.delegate = self
+        phraseSearchButton.imageView?.contentMode = .scaleAspectFit
+        latLonSearchButton.imageView?.contentMode = .scaleAspectFit
         subscribeToNotification(.UIKeyboardWillShow, selector: #selector(keyboardWillShow))
         subscribeToNotification(.UIKeyboardWillHide, selector: #selector(keyboardWillHide))
         subscribeToNotification(.UIKeyboardDidShow, selector: #selector(keyboardDidShow))
