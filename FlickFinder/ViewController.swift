@@ -56,7 +56,7 @@ class ViewController: UIViewController {
         
         if !phraseTextField.text!.isEmpty {
             photoTitleLabel.text = "Searching..."
-            // TODO: Set necessary parameters!
+            // Set necessary parameters!
             let methodParameters: [String: AnyObject] = [
                 Constants.FlickrParameterKeys.Method: Constants.FlickrParameterValues.SearchMethod as AnyObject,
                 Constants.FlickrParameterKeys.APIKey: Constants.FlickrParameterValues.APIKey as AnyObject,
@@ -81,8 +81,16 @@ class ViewController: UIViewController {
         
         if isTextFieldValid(latitudeTextField, forRange: Constants.Flickr.SearchLatRange) && isTextFieldValid(longitudeTextField, forRange: Constants.Flickr.SearchLonRange) {
             photoTitleLabel.text = "Searching..."
-            // TODO: Set necessary parameters!
-            let methodParameters: [String: AnyObject] = [:]
+            // Set necessary parameters!
+            let methodParameters: [String: AnyObject] = [
+                Constants.FlickrParameterKeys.Method: Constants.FlickrParameterValues.SearchMethod as AnyObject,
+                Constants.FlickrParameterKeys.APIKey: Constants.FlickrParameterValues.APIKey as AnyObject,
+                Constants.FlickrParameterKeys.BoundingBox: makeBoundingBox(),
+                Constants.FlickrParameterKeys.SafeSearch: Constants.FlickrParameterValues.UseSafeSearch as AnyObject,
+                Constants.FlickrParameterKeys.Extras: Constants.FlickrParameterValues.MediumURL as AnyObject,
+                Constants.FlickrParameterKeys.Format: Constants.FlickrParameterValues.ResponseFormat as AnyObject,
+                Constants.FlickrParameterKeys.NoJSONCallback: Constants.FlickrParameterValues.DisableJSONCallback as AnyObject
+            ]
             displayImageFromFlickrBySearch(methodParameters)
         }
         else {
@@ -90,6 +98,28 @@ class ViewController: UIViewController {
             photoTitleLabel.text = "Lat should be [-90, 90].\nLon should be [-180, 180]."
         }
     }
+    
+    // Create the bounding box
+    private func makeBoundingBox() -> AnyObject {
+        // Pull values from the textfields, valid entry checks have already been done, so they don't need to be done again here, doing a guard check anyway to make sure they are valid doubles.
+        guard let enteredLatitude = Double(latitudeTextField.text!), let enteredLongitude = Double(longitudeTextField.text!)
+        else {
+            print("could not get valid lat/long values from text fields, sending back Space Needle")
+            return "-122.2,47.5,-122.4,47.7" as AnyObject
+        }
+        
+        // Figure out min and max values based on constants (currently set to 1), change in constants not here.  Will not allow values to exceed ranges of -180,180 or -90,90
+        // Note: Underscores are used to match Flickr API documentation
+        let minimum_longitude = max(enteredLongitude - Constants.Flickr.SearchBBoxHalfWidth, -180)
+        let minimum_latitude = max(enteredLatitude - Constants.Flickr.SearchBBoxHalfHeight, -90)
+        let maximum_longitude = min(enteredLongitude + Constants.Flickr.SearchBBoxHalfWidth, 180)
+        let maximum_latitude = min(enteredLatitude + Constants.Flickr.SearchBBoxHalfHeight, 90)
+        
+        let calculatedLatString = "\(minimum_longitude),\(minimum_latitude),\(maximum_longitude),\(maximum_latitude)"
+        
+        return calculatedLatString as AnyObject
+    }
+    
     
     // MARK: Flickr API
     
